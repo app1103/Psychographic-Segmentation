@@ -1,0 +1,141 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+nd<-read.csv('E:\carrer rowdy\prax sem 2\cusa\PROJECT\NewDataForTermProject.csv')
+table(is.na(nd))
+barplot(table(as.factor(nd$V3...Weekends.at.home.with.familyÉ)))
+```
+
+```{r}
+library(caret)
+
+
+n1 <- t.data.frame(nd[,2:16])
+n1 <- as.data.frame(n1)
+n1 <- sapply(1:664,function(x){as.factor(n1[,x])})
+n1 <- as.data.frame(n1)
+i <- nearZeroVar(n1)
+length(nearZeroVar(n1))
+
+nd <- nd[,2:16]
+v <- c(66,130,131,221)  ## Unique Values
+s <- setdiff(i,v)
+
+# Removing 28 observations 
+nd <- nd[-s,]
+
+a <- c()
+b <- which(is.na(nd[,4]))
+for(i in 5:15){
+  a<- which(is.na(nd[,i]))
+  b <- intersect(a,b)
+}
+
+nd <- nd[-b,]  
+```
+
+
+
+```{r}
+# Mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+for(i in 3:13){
+  nd[is.na(nd[,i]),i] <- getmode(nd[,i])
+}
+
+
+```
+
+
+```{r}
+nd2 <-read.csv("E:/carrer rowdy/prax sem 2/cusa/NewDataForTermProject.csv",na.strings = c(''," ",NA))
+nd2 <- nd2[,17:26]
+
+for(i in 1:10){
+  nd2[is.na(nd2[,i]),i] <- getmode(nd2[,i])
+}
+
+nd2 <- nd2[rownames(nd),]
+
+final_data <- cbind(nd,nd2)
+```
+
+
+```{r}
+final_data[,16:25] <- sapply(16:25,function(x){as.factor(final_data[,x])})
+
+num.var <- names(final_data[,sapply(final_data,function(x)is.integer(x))])
+cat.var <-  setdiff(names(final_data),num.var)
+
+fd_num <- final_data[,num.var]
+fd_cat <- final_data[,cat.var]
+
+
+```
+
+
+```{r}
+
+
+km.out.4 = kmeans(fd_num, 4, nstart = 50)
+km.out.3 = kmeans(fd_num, 3, nstart = 50)
+```
+
+```{r}
+
+
+
+for(i in 4:7){
+  fd_cat[,i] <- factor(fd_cat[,i], levels = c(1, 2, 3, 4),
+                        labels = c("Never", "Less.often", "Atleast.once.a.week","Everyday"))
+}
+
+fd_cat$Q9...Tea_Coffee <- factor(fd_cat$Q9...Tea_Coffee, levels = c(1, 2),
+                                  labels = c("Tea", "Coffee"))
+
+fd_cat$Q10...Gender <- factor(fd_cat$Q10...Gender, levels = c(1, 2),
+                               labels = c("Male", "Female"))
+
+fd_cat$Q11...Occupation <- factor(fd_cat$Q11...Occupation, levels = c(1,2,3),
+                                  labels = c("student","working.exec","others"))
+
+f1 <- fd_cat[km.out.3$cluster==1,]
+s1 <- sapply(1:10,function(x){as.character(getmode(f1[,x]))})
+
+f2 <- fd_cat[km.out.3$cluster==2,]
+s2 <- as.character(sapply(1:10,function(x){as.character(getmode(f2[,x]))}))
+
+f3 <- fd_cat[km.out.3$cluster==3,]
+s3 <- as.character(sapply(1:10,function(x){as.character(getmode(f3[,x]))}))
+
+s1 <- as.character(s1)
+s2 <- as.character(s2)
+s3 <- as.character(s3)
+
+s <- cbind(s1,s2,s3)
+View(s)
+
+n <- names(fd_cat)
+ss <- cbind(n,s)
+View(ss)
+```
+
+
+```{r}
+pro <- read.csv('E:/profile.csv')
+pror <- rbind(pro,ss)
+pror <- as.data.frame(pror)
+```
+
+
